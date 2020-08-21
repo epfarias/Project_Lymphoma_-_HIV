@@ -1,4 +1,4 @@
-########## LUAD_maftools ##########
+########## DLBC_maftools ##########
 # bia.stransky - 12/08/2020 #
 
 # maftools: Summarize, Analyze and Visualize Mutation Anotated Files (MAF) Files
@@ -12,7 +12,7 @@ if (!requireNamespace("BiocManager", quietly=TRUE))
 BiocManager::install("TCGAbiolinks")
 BiocManager::install("maftools")
 BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
-
+a
 library(TCGAbiolinks)
 library(maftools)
 library(tidyverse)
@@ -25,7 +25,7 @@ library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE) # for mutational signatures
 
 # download MAF aligned against hg38
 # it saves data inside a GDCdata and project name directory (on BStransky)
-maf <- GDCquery_Maf("LUAD", pipelines = "muse", directory = "GDCdata")
+maf <- GDCquery_Maf("DLBC", pipelines = "muse", directory = "GDCdata")
 sort(colnames(maf))
 
 # merge 2 projetcs, same primary site
@@ -36,22 +36,22 @@ sort(colnames(maf))
 # save(maf,file ="lung.maf.rda", compress = "xz")
 
 # MAF object contains main maf file, summarized data and any associated sample annotations
-luad.maf <- read.maf(maf = maf, useAll = T) 
+dlbc.maf <- read.maf(maf = maf, useAll = T) 
 
 # checking
-getSampleSummary(luad.maf) # 559 samples (Tumor_Sample_Barcode)
-getGeneSummary(luad.maf) # 16365 genes (hugo)
-getClinicalData(luad.maf) # 563 samples, no clinical data  
-getFields(luad.maf) # 120 variables 
+getSampleSummary(dlbc.maf) # 559 samples (Tumor_Sample_Barcode)
+getGeneSummary(dlbc.maf) # 16365 genes (hugo)
+getClinicalData(dlbc.maf) # 563 samples, no clinical data  
+getFields(dlbc.maf) # 120 variables 
 
 # writes an output file
-write.mafSummary(maf = luad.maf, basename = 'luad.maf')
+write.mafSummary(maf = dlbc.maf, basename = 'dlbc.maf')
 
 
 ## Reading clinical indexed data ------------------
 
 # same as in data portal
-clinical <- GDCquery_clinic(project = "TCGA-LUAD", type = "clinical", save.csv = FALSE)
+clinical <- GDCquery_clinic(project = "TCGA-DLBC", type = "clinical", save.csv = FALSE)
 sort(colnames(clinical))
 
 colnames(clinical)[1] <- "Tumor_Sample_Barcode"
@@ -61,37 +61,41 @@ clinical$time <- clinical$days_to_death
 clinical$time[is.na(clinical$days_to_death)] <- clinical$days_to_last_follow_up[is.na(clinical$days_to_death)]
 
 # create object for survival analysis 
-luad.mafclin <- read.maf(maf = maf, clinicalData = clinical, isTCGA = T)
+dlbc.mafclin <- read.maf(maf = maf, clinicalData = clinical, isTCGA = T)
 
 
 ## Reading gistic or CNV -------------------------
 
-# luad.gistic = readGistic(gisticAllLesionsFile = all.lesions, gisticAmpGenesFile = amp.genes, gisticDelGenesFile = del.genes, gisticScoresFile = scores.gis, isTCGA = TRUE)
+all.lesions <- system.file("extdata", "all_lesions.conf_99.txt", package = "maftools")
+amp.genes <- system.file("extdata", "amp_genes.conf_99.txt", package = "maftools")
+del.genes <- system.file("extdata", "del_genes.conf_99.txt", package = "maftools")
+scores.gis <- system.file("extdata", "scores.gistic", package = "maftools")
 
-
+dlbc.gistic = readGistic(gisticAllLesionsFile = all.lesions, gisticAmpGenesFile = amp.genes,
+                         gisticDelGenesFile = del.genes, gisticScoresFile = scores.gis, isTCGA = TRUE)
 
 ## Vizualizing -----------------------------------
 
 # displays variants in each sample and variant types summarized by Variant_Classification
-plotmafSummary(maf = luad.maf, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+plotmafSummary(maf = dlbc.maf, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
 
 # oncoplot for top ten mutated genes (costumize oncoplots!)
-oncoplot(maf = luad.maf, top = 10)
+oncoplot(maf = dlbc.maf, top = 10)
 
 # transition and transversions
-mafLuad.titv <- titv(maf = luad.maf, plot = FALSE, useSyn = TRUE)
-plotTiTv(res = mafLuad.titv)
+mafDlbc.titv <- titv(maf = dlbc.maf, plot = FALSE, useSyn = TRUE)
+plotTiTv(res = mafDlbc.titv)
 
-# lollipop plot for TTN, which is one of the most frequent mutated gene in Lung Adenocarcinoma
-lollipopPlot(maf = luad.maf, gene = 'TTN', AACol = 'AA_MAF', showMutationRate = TRUE)
-lollipopPlot(maf = luad.maf, gene = 'TTN', AACol = 'AA_MAF', showDomainLabel = FALSE)
+# lollipop plot for IGHV2-70, which is one of the most frequent mutated gene in Diffuse Large B-Cell Lymphoma
+lollipopPlot(maf = dlbc.mafclin, gene = 'IGHV2-70', AACol = 'SYMBOL', showMutationRate = TRUE)
+lollipopPlot(maf = dlbc.mafclin, gene = 'IGHV2-70', AACol = 'SYMBOL', showDomainLabel = FALSE)
 
 # rainfall plots highlights hyper-mutated genomic regions
 # Kataegis: genomic segments containing six or more consecutive mutations with an average inter-mutation distance of less than or equal to 1,00 bp
-rainfallPlot(maf = luad.maf, detectChangePoints = TRUE, pointSize = 0.6)
+rainfallPlot(maf = dlbc.maf, detectChangePoints = TRUE, pointSize = 0.6)
 
 # mutation load
-luad.mutload <- tcgaCompare(maf = luad.maf)
+dlbcl.mutload <- tcgaCompare(maf = dlbc.maf)
 
 # plots Variant Allele Frequencies
 # clonal genes usually have mean allele frequency around ~50% assuming pure sample
@@ -112,48 +116,54 @@ luad.mutload <- tcgaCompare(maf = luad.maf)
 ## Analysis -------------------------------------
 
 # exclusive/co-occurance event analysis on top 10 mutated genes (pair-wise Fisher’s Exact test)
-somaticInteractions(maf = luad.maf, top = 10, pvalue = c(0.05, 0.1))
+somaticInteractions(maf = dlbc.maf, top = 10, pvalue = c(0.05, 0.1))
 
 # detecting cancer driver genes based on positional clustering
 # most of the variants in cancer causing genes are enriched at few specific loci (aka hot-spots)
-luad.sig <- oncodrive(maf = luad.maf, AACol = 'Amino_acids', minMut = 5, pvalMethod = 'zscore')
-plotOncodrive(res = luad.sig, fdrCutOff = 0.1, useFraction = TRUE) # AACol = 'Amino_acids'?
+dlbc.sig <- oncodrive(maf = dlbc.maf, AACol = 'AA_MAF', minMut = 5, pvalMethod = 'zscore')
+plotOncodrive(res = dlbcl.sig, fdrCutOff = 0.1, useFraction = TRUE) # AACol = 'Amino_acids'?
 
 # pfam domain
-luad.pfam = pfamDomains(maf = luad.maf, AACol = 'Amino_acids', top = 10) # idem
+dlbc.pfam = pfamDomains(maf = dlbc.maf, AACol = 'AA_MAF', top = 10) # idem
 
 
 ## Copy-number variation -----------------------
-# < code here! >
+#Gistic Object
+dlbc.gistic
 
+##Vizualizing Gistic Objects
+gisticChromPlot(gistic = dlbc.gistic, markBands = "all")
 
+gisticBubblePlot(gistic = dlbc.gistic)
+
+gisticOncoPlot(gistic = dlbc.gistic, clinicalData = dlbc.mafclin,clinicalFeatures = 'ann_arbor_clinical_stage', sortByAnnotation = FALSE, top = 10)
 
 
 ## Survival Analysis ------------------------------
 
 # it requires input data with Tumor_Sample_Barcode, binary event (1/0) and time to event.
-mafSurvival(maf = luad.mafclin, genes = 'TP53', time = 'time', Status = 'vital_status', isTCGA = TRUE)
+mafSurvival(maf = dlbc.mafclin, genes = 'IGHV2-70', time = 'time', Status = 'vital_status', isTCGA = TRUE)
 
 # identify a set of genes (of size 2) to predict poor prognostic groups
-prog_geneset <- survGroup(maf = luad.mafclin, top = 20, geneSetSize = 2, time = "time", Status = "vital_status", verbose = FALSE)
+prog_geneset <- survGroup(maf = dlbc.mafclin, top = 20, geneSetSize = 2, time = "days_to_last_follow_up", Status = "vital_status", verbose = FALSE)
 
 
 ## Clinical enrichment analysis ------------------
 
-ajcc.enrich <- clinicalEnrichment(maf = luad.mafclin, clinicalFeature = 'ajcc_pathologic_stage')
+aacs.enrich <- clinicalEnrichment(maf = dlbc.mafclin, clinicalFeature = 'ann_arbor_clinical_stage')
 
 # identify mutations associated with clinicalFeature
 # results are returned as a list. Significant associations p-value < 0.05
-# ajcc.enrich$groupwise_comparision[p_value < 0.05] # it takes too long!!
+aacs.enrich$groupwise_comparision[p_value < 0.05] # it takes too long!!
 
-# plotEnrichmentResults(enrich_res = ajcc.enrich, pVal = 0.05)
+plotEnrichmentResults(enrich_res = aacs.enrich, pVal = 0.05)
 
 
 ## Oncogenic Signaling Pathways --------------------
 
-OncogenicPathways(maf = luad.maf)
+OncogenicPathways(maf = dlbc.maf)
 
-PlotOncogenicPathways(maf = luad.maf, pathways = "RTK-RAS")
+PlotOncogenicPathways(maf = dlbc.maf, pathways = "NOTCH")
 # tumor suppressor genes (red) and oncogenes (blue)
 
 
