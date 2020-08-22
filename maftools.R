@@ -1,5 +1,5 @@
-########## DLBC_maftools ##########
-# bia.stransky - 12/08/2020 #
+############# DLBC_maftools ##################
+# MAF files from Difuse Large B-cell lymphomas
 
 # maftools: Summarize, Analyze and Visualize Mutation Anotated Files (MAF) Files
 # URL: https://www.bioconductor.org/packages/release/bioc/html/maftools.html
@@ -12,7 +12,7 @@ if (!requireNamespace("BiocManager", quietly=TRUE))
 BiocManager::install("TCGAbiolinks")
 BiocManager::install("maftools")
 BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
-a
+
 library(TCGAbiolinks)
 library(maftools)
 library(tidyverse)
@@ -21,27 +21,20 @@ library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE) # for mutational signatures
 
 #setwd()
 
-## Reading Maf files ---------------------------
+## Reading DLBC Maf files ---------------------------
 
 # download MAF aligned against hg38
-# it saves data inside a GDCdata and project name directory (on BStransky)
+# it saves data inside a GDCdata and project name directory 
 maf <- GDCquery_Maf("DLBC", pipelines = "muse", directory = "GDCdata")
 sort(colnames(maf))
-
-# merge 2 projetcs, same primary site
-# luad.maf <- GDCquery_Maf("LUAD", pipelines = "muse", directory = "GDCdata")
-# lusc.maf <- GDCquery_Maf("LUSC", pipelines = "muse", directory = "GDCdata")
-## bind the results, as the columns might not be the same
-# lung.maf <- plyr::rbind.fill(luad.maf, lusc.maf) 
-# save(maf,file ="lung.maf.rda", compress = "xz")
 
 # MAF object contains main maf file, summarized data and any associated sample annotations
 dlbc.maf <- read.maf(maf = maf, useAll = T) 
 
 # checking
-getSampleSummary(dlbc.maf) # 559 samples (Tumor_Sample_Barcode)
-getGeneSummary(dlbc.maf) # 16365 genes (hugo)
-getClinicalData(dlbc.maf) # 563 samples, no clinical data  
+getSampleSummary(dlbc.maf) # 37 samples (Tumor_Sample_Barcode) -> not 29??
+getGeneSummary(dlbc.maf) # 2632 genes (hugo)
+getClinicalData(dlbc.maf) # 37 samples, no clinical data  
 getFields(dlbc.maf) # 120 variables 
 
 # writes an output file
@@ -64,31 +57,21 @@ clinical$time[is.na(clinical$days_to_death)] <- clinical$days_to_last_follow_up[
 dlbc.mafclin <- read.maf(maf = maf, clinicalData = clinical, isTCGA = T)
 
 
-## Reading gistic or CNV -------------------------
-
-all.lesions <- system.file("extdata", "all_lesions.conf_99.txt", package = "maftools")
-amp.genes <- system.file("extdata", "amp_genes.conf_99.txt", package = "maftools")
-del.genes <- system.file("extdata", "del_genes.conf_99.txt", package = "maftools")
-scores.gis <- system.file("extdata", "scores.gistic", package = "maftools")
-
-dlbc.gistic = readGistic(gisticAllLesionsFile = all.lesions, gisticAmpGenesFile = amp.genes,
-                         gisticDelGenesFile = del.genes, gisticScoresFile = scores.gis, isTCGA = TRUE)
-
 ## Vizualizing -----------------------------------
 
 # displays variants in each sample and variant types summarized by Variant_Classification
 plotmafSummary(maf = dlbc.maf, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
 
 # oncoplot for top ten mutated genes (costumize oncoplots!)
-oncoplot(maf = dlbc.maf, top = 10)
+oncoplot(maf = dlbc.maf, top = 20)
 
 # transition and transversions
 mafDlbc.titv <- titv(maf = dlbc.maf, plot = FALSE, useSyn = TRUE)
 plotTiTv(res = mafDlbc.titv)
 
-# lollipop plot for IGHV2-70, which is one of the most frequent mutated gene in Diffuse Large B-Cell Lymphoma
-lollipopPlot(maf = dlbc.mafclin, gene = 'IGHV2-70', AACol = 'SYMBOL', showMutationRate = TRUE)
-lollipopPlot(maf = dlbc.mafclin, gene = 'IGHV2-70', AACol = 'SYMBOL', showDomainLabel = FALSE)
+# lollipop plot for IGHV2-70, which is one of the most frequent mutated gene in DLBC
+lollipopPlot(maf = dlbc.maf, gene = 'CARD11', AACol = 'Amino_acids', showMutationRate = TRUE)
+lollipopPlot(maf = dlbc.mafclin, gene = 'MUC16', AACol = 'Amino_acids', showDomainLabel = FALSE)
 
 # rainfall plots highlights hyper-mutated genomic regions
 # Kataegis: genomic segments containing six or more consecutive mutations with an average inter-mutation distance of less than or equal to 1,00 bp
@@ -127,16 +110,39 @@ plotOncodrive(res = dlbcl.sig, fdrCutOff = 0.1, useFraction = TRUE) # AACol = 'A
 dlbc.pfam = pfamDomains(maf = dlbc.maf, AACol = 'AA_MAF', top = 10) # idem
 
 
-## Copy-number variation -----------------------
-#Gistic Object
+## Reading gistic or CNV -------------------------
+
+all.lesions <- system.file("extdata", "all_lesions.conf_99.txt", package = "maftools")
+amp.genes <- system.file("extdata", "amp_genes.conf_99.txt", package = "maftools")
+del.genes <- system.file("extdata", "del_genes.conf_99.txt", package = "maftools")
+scores.gis <- system.file("extdata", "scores.gistic", package = "maftools")
+
+dlbc.gistic = readGistic(gisticAllLesionsFile = all.lesions, gisticAmpGenesFile = amp.genes,
+                         gisticDelGenesFile = del.genes, gisticScoresFile = scores.gis, isTCGA = TRUE)
+
+# GISTIC object
 dlbc.gistic
 
-##Vizualizing Gistic Objects
+# checking 
+getSampleSummary(dlbc.gistic) # 191 samples (Tumor_Sample_Barcode) -> not 29??
+getGeneSummary(dlbc.gistic) # 2632 genes (hugo)
+getCytobandSummary(dlbc.gistic) # 16 cytobands
+
+write.GisticSummary(gistic = dlbc.gistic, basename = 'dlbc.gistic')
+
+
+## Vizualizing Gistic ---------------------------------
+
+# genome plot
 gisticChromPlot(gistic = dlbc.gistic, markBands = "all")
 
+# bubble plot
 gisticBubblePlot(gistic = dlbc.gistic)
 
-gisticOncoPlot(gistic = dlbc.gistic, clinicalData = dlbc.mafclin,clinicalFeatures = 'ann_arbor_clinical_stage', sortByAnnotation = FALSE, top = 10)
+# oncoplot 
+gisticOncoPlot(gistic = dlbc.gistic, clinicalData = getClinicalData(x = dlbc.mafclin), clinicalFeatures = 'ann_arbor_clinical_stage', sortByAnnotation = FALSE, top = 10) # error 
+
+gisticOncoPlot(gistic = dlbc.gistic, top = 20)
 
 
 ## Survival Analysis ------------------------------
