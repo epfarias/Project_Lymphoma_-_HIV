@@ -1,3 +1,3 @@
 # Lymphoma_Virus
 
-Describe your project here!
+Research project on relations between Lymphoma and HIV infection.
