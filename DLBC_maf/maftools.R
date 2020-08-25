@@ -7,17 +7,27 @@
 
 
 ## Installing packages
-if (!requireNamespace("BiocManager", quietly=TRUE))
-     install.packages("BiocManager")
-BiocManager::install("TCGAbiolinks")
-BiocManager::install("maftools")
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
 
-library(TCGAbiolinks)
-library(maftools)
-library(tidyverse)
-library(DT) # wrapper of JavaScript Library 'DataTables'
-library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE) # for mutational signatures
+packages_bioconductor <- c("TCGAbiolinks","maftools","BSgenome.Hsapiens.UCSC.hg38")
+packages_cran <- c("tidyverse", "pheatmap")
+
+#use this function to check if each package is on the local machine
+#if a package is installed, it will be loaded
+#if any are not, the missing package(s) will be installed from Bioconductor and loaded
+package.check <- lapply(packages_bioconductor, FUN = function(x) {
+        if (!require(x, character.only = TRUE)) {
+                BiocManager::install(x, dependencies = TRUE)
+                library(x, character.only = TRUE)
+        }
+})
+package.check <- lapply(packages_cran, FUN = function(x) {
+        if (!require(x, character.only = TRUE)) {
+                install.packages(x, dependencies = TRUE)
+                library(x, character.only = TRUE)
+        }
+})
+
+rm(packages_cran, packages_bioconductor, package.check)
 
 #setwd()
 
