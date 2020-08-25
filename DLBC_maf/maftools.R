@@ -7,7 +7,6 @@
 
 
 ## Installing packages
-
 packages_bioconductor <- c("TCGAbiolinks","maftools","BSgenome.Hsapiens.UCSC.hg38")
 packages_cran <- c("tidyverse", "pheatmap")
 
