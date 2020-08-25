@@ -1,0 +1,21 @@
+patient_id,age,ethnicity,gender,race,vital_status,year_of_birth,aa_b_symp,aa_clin_stg,aa_ex_inv,days_to_last_follow_up,primary_diagnosis,prior_malignancy,prior_treatment,tissue_or_organ_of_origin,year_of_diagnosis,treatment_or_therapy,treatment_type
+TCGA-GS-A9TX,37,hispanic or latino,male,white,Alive,1974,No,STG1,No,1373,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of inguinal region or leg,2011,yes,Radiation
+TCGA-GS-A9U3,77,hispanic or latino,female,white,Alive,1928,Yes,STG3,No,3394,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of inguinal region or leg,2005,no,Radiation
+TCGA-GS-A9TQ,69,hispanic or latino,female,white,Alive,1943,No,STG2,No,982,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of inguinal region or leg,2012,no,Radiation
+TCGA-GS-A9TV,40,hispanic or latino,female,white,Alive,1973,No,STG2,No,730,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2013,yes,Pharmaceutical
+TCGA-GS-A9TY,82,hispanic or latino,female,white,Alive,1923,No,STG1,No,2616,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of axilla or arm,2005,no,Radiation
+TCGA-FF-8047,38,not hispanic or latino,female,asian,Alive,1973,No,STG2,No,126,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2011,no,Radiation
+TCGA-FA-A4BB,67,not hispanic or latino,male,white,Alive,1945,Yes,STG4,Yes,132,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of axilla or arm,2012,yes,Pharmaceutical
+TCGA-GS-A9TZ,51,hispanic or latino,male,white,Alive,1961,No,STG2,No,765,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2012,yes,Radiation
+TCGA-GS-A9TW,23,hispanic or latino,female,white,Alive,1987,No,STG2,No,1617,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of axilla or arm,2010,yes,Radiation
+TCGA-FA-A6HN,73,not hispanic or latino,male,asian,Dead,1940,No,NA,No,6,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2013,yes,Pharmaceutical
+TCGA-FA-A86F,64,not hispanic or latino,female,white,Alive,1949,No,STG3,No,553,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of axilla or arm,2013,yes,Pharmaceutical
+TCGA-GR-A4D5,46,not hispanic or latino,female,white,Alive,1964,Yes,STG4,Yes,1299,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2010,no,Radiation
+TCGA-GS-A9TU,45,hispanic or latino,male,white,Alive,1959,No,STG2,No,3897,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Lymph nodes of inguinal region or leg,2004,yes,Radiation
+TCGA-FA-A7Q1,61,not hispanic or latino,female,asian,Dead,1952,No,STG1,No,22,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,Intra-abdominal lymph nodes,2013,no,Radiation
+TCGA-GR-A4D6,54,not hispanic or latino,female,asian,Alive,1956,No,STG1,No,1334,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2010,no,Radiation
+TCGA-GR-A4D9,66,not hispanic or latino,female,white,Alive,1943,No,STG4,Yes,1739,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2009,no,Radiation
+TCGA-FF-A7CQ,74,not hispanic or latino,male,asian,Alive,1936,Yes,STG4,Yes,298,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2010,no,Radiation
+TCGA-FF-8042,57,not hispanic or latino,female,asian,Alive,1953,No,STG2,No,946,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2010,yes,Pharmaceutical
+TCGA-FF-A7CR,61,not hispanic or latino,male,asian,Dead,1951,No,STG4,Yes,NA,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2012,yes,Pharmaceutical
+TCGA-FA-A6HO,58,not hispanic or latino,female,asian,Alive,1955,No,NA,No,749,"Malignant lymphoma, large B-cell, diffuse, NOS",no,No,"Lymph nodes of head, face and neck",2013,no,Radiation
