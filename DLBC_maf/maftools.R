@@ -188,7 +188,6 @@ PlotOncogenicPathways(maf = dlbc.maf, pathways = "NOTCH")
 
 
 ## Mutational signatures --------------------------
-
 #Gene Signature of Lymph-nodes Cancer (TCGA-DLBC, Diffuse Large B-Cell Lymphoma) with Maftools
 
 - References: 
@@ -197,7 +196,7 @@ PlotOncogenicPathways(maf = dlbc.maf, pathways = "NOTCH")
 #http://bioconductor.org/packages/devel/bioc/vignettes/maftools/inst/doc/maftools.html#910_mutational_signatures
 
 #2. Alexandrov, L.B., et al., Signatures of mutational processes in human cancer.
-        #Nature, 2013. 500(7463): p. 415-21. 
+#Nature, 2013. 500(7463): p. 415-21. 
 #https://www.nature.com/articles/nature12477
 
 #3. Roberts SA, Lawrence MS, Klimczak LJ, et al.
@@ -227,17 +226,17 @@ dlbc.mutect.maf <- GDCquery_Maf("DLBC", pipelines = "mutect2")
 
 #We select the mutect2 pipeline, since it has the larger number of variants.
 
-#«Every cancer, as it progresses leaves a signature characterized by specific
+#?Every cancer, as it progresses leaves a signature characterized by specific
 #pattern of nucleotide substitutions. Alexandrov et.al have shown such 
 #mutational signatures, derived from over 7000 cancer samples 5. Such signatures
 #can be extracted by decomposing matrix of nucleotide substitutions, classified
 #into 96 substitution classes based on immediate bases surrounding the mutated
-#base. Extracted signatures can also be compared to those validated signatures.»
+#base. Extracted signatures can also be compared to those validated signatures.?
 
-#«First step in signature analysis is to obtain the adjacent bases surrounding
+#?First step in signature analysis is to obtain the adjacent bases surrounding
 #the mutated base and form a mutation matrix. NOTE: Earlier versions of maftools
 #required a fasta file as an input. But starting from 1.8.0, BSgenome objects
-#are used for faster sequence extraction.» [1]
+#are used for faster sequence extraction.? [1]
 
 #Requires BSgenome object
 library(BSgenome.Hsapiens.UCSC.hg38, quietly = TRUE)
@@ -256,14 +255,14 @@ dlbc.tnm = trinucleotideMatrix(maf = dlbc.mutect.maf_clin, prefix = '', add = TR
 #enzymes, when misregulated, are a major source of mutation in numerous cancer
 #types.
 
-#«We can also analyze the differences in mutational patterns between APOBEC
+#?We can also analyze the differences in mutational patterns between APOBEC
 #enriched and non-APOBEC enriched samples. plotApobecDiff is a function which
 #takes APOBEC enrichment scores estimated by trinucleotideMatrix and classifies
 #samples into APOBEC enriched and non-APOBEC enriched. Once stratified, it
-#compares these two groups to identify differentially altered genes.»[1]
+#compares these two groups to identify differentially altered genes.?[1]
 
-#«Note that, LAML with no APOBEC enrichments, is not an ideal cohort for this
-#sort of analysis and hence below plot is only for demonstration purpose.»[1]
+#?Note that, LAML with no APOBEC enrichments, is not an ideal cohort for this
+#sort of analysis and hence below plot is only for demonstration purpose.?[1]
 
 #APOBEC Differentiation by Trinucleotide Matrix
 plotApobecDiff(tnm = dlbc.tnm, maf = dlbc.mutect.maf_clin, pVal = 0.05)
@@ -304,14 +303,14 @@ text(x = 5, y = 5, labels = "compareSignatures()", font = 3)
 arrows(x0 = 5, y0 = 4, x1 = 5, y1 = 1, length = 0.1, lwd = 2)
 text(x = 5, y = 0, labels = "plotSignatures()", font = 3)
 
-#«Draw elbow plot to visualize and decide optimal number of signatures from
-#above results.»
+#?Draw elbow plot to visualize and decide optimal number of signatures from
+#above results.?
 
-#«Best possible value is the one at which the correlation value on the y-axis
+#?Best possible value is the one at which the correlation value on the y-axis
 #drops significantly. In this case it appears to be at n = 3. LAML is not an
 #ideal example for signature analysis with its low mutation rate, but for
 #solid tumors with higher mutation burden one could expect more signatures,
-#provided sufficient number of samples.»
+#provided sufficient number of samples.?
 
 
 #Run main function with maximum 10 signatures. 
