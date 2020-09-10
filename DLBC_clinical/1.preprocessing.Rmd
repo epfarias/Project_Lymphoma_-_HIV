@@ -50,7 +50,7 @@ setwd(".")
 ## 1. Data importing and visualizing
 
 ```{r message=FALSE, warning=FALSE, paged.print=TRUE}
-dlbcl_clin_raw <- read_delim("DBLC_clinical/clinical.tsv", "\t", 
+dlbcl_clin_raw <- read_delim("clinical.tsv", "\t", 
                             escape_double = FALSE, 
                             trim_ws = TRUE, na = c("\'--","NA"))
 ```
@@ -92,9 +92,6 @@ dlbcl_clean0 <- dlbcl_clean %>%
 ```
 
 Remove nuneric variables with unique observations:  
-<!-- # TO DO @PATRICK: function to select variables with unique observations? 
-<!-- # kirc_cleanX <- kirc_clean1 %>% -->
-<!-- #     summarise_if(is.numeric, ~ n=unique(.)) -->
 
 ```{r message=FALSE, warning=FALSE, paged.print=TRUE}
 dlbcl_clean0 %>%
