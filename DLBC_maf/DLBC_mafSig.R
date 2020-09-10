@@ -3,7 +3,7 @@
 
 
 ## Installing packages
-packages_bioconductor <- c("TCGAbiolinks","maftools","BSgenome.Hsapiens.UCSC.hg38","SummarizedExperiment")
+packages_bioconductor <- c("TCGAbiolinks","maftools","TCGAmutations","BSgenome.Hsapiens.UCSC.hg38", "BSgenome.Hsapiens.UCSC.hg19","SummarizedExperiment")
 packages_cran <- c("DT", "tidyverse", "stringr", "data.table", "pheatmap","NMF")
 
 #use this function to check if each package is on the local machine
@@ -21,6 +21,7 @@ package.check <- lapply(packages_cran, FUN = function(x) {
           library(x, character.only = TRUE)
      }
 })
+#BiocManager::install("PoisonAlien/TCGAmutations")
 
 rm(packages_cran, packages_bioconductor, package.check)
 
@@ -28,6 +29,7 @@ rm(packages_cran, packages_bioconductor, package.check)
 
 #Download Mutational Data
 dlbc.mutect.maf <- GDCquery_Maf("DLBC", pipelines = "mutect2")
+
 
 # Number of mutations on muse:  6094
 #dim(DLBC.muse.maf)[1]
@@ -57,16 +59,14 @@ dlbc.mutect.maf <- GDCquery_Maf("DLBC", pipelines = "mutect2")
 #Requires BSgenome object
 library(BSgenome.Hsapiens.UCSC.hg38, quietly = TRUE)
 
-dlbc.mutect.maf_clin <- read.maf(maf = dlbc.mutect.maf, 
-                                 clinicalData=clinical, 
+dlbc.mutect.maf_clin <- read.maf(maf = dlbc.mutect.maf,  
                                  verbose = T, 
                                  isTCGA = T, 
                                  removeDuplicatedVariants = F)
 
 #Trinucleotide Matrix
-dlbc.tnm = trinucleotideMatrix(maf = dlbc.mutect.maf_clin, prefix = '', add = TRUE,
+dlbc.mutect.tnm = trinucleotideMatrix(maf = dlbc.mutect.maf_clin, prefix = '', add = TRUE,
                                ref_genome = "BSgenome.Hsapiens.UCSC.hg38")
-
 #In humans/mammals the APOBEC help protect from viral infections. The APOBEC
 #enzymes, when misregulated, are a major source of mutation in numerous cancer
 #types.
@@ -81,7 +81,7 @@ dlbc.tnm = trinucleotideMatrix(maf = dlbc.mutect.maf_clin, prefix = '', add = TR
 #sort of analysis and hence below plot is only for demonstration purpose.?[1]
 
 #APOBEC Differentiation by Trinucleotide Matrix
-plotApobecDiff(tnm = dlbc.tnm, maf = dlbc.mutect.maf_clin, pVal = 0.05)
+plotApobecDiff(tnm = dlbc.tnm, maf = dlbc.mutect.maf_clin, pVal = 0.5)
 
 #Signature analysis includes following steps.
 
@@ -132,16 +132,17 @@ text(x = 5, y = 0, labels = "plotSignatures()", font = 3)
 #Run main function with maximum 10 signatures. 
 
 library('NMF')
+
 dlbc.sign = estimateSignatures(mat = dlbc.tnm, nTry = 10, pConstant = 0.1, plotBestFitRes = T, parallel = 2)
 
 #- Legacy - Mutational Signatures (v2 - March 2015):
-#        https://cancer.sanger.ac.uk/cosmic/signatures_v2.tt
-#https://cancer.sanger.ac.uk/signatures_v2/Signature_patterns.png
-#https://cancer.sanger.ac.uk/signatures_v2/matrix.png
+# https://cancer.sanger.ac.uk/cosmic/signatures_v2.tt
+# https://cancer.sanger.ac.uk/signatures_v2/Signature_patterns.png
+# https://cancer.sanger.ac.uk/signatures_v2/matrix.png
 
 
 #- Single Base Substitution (SBS) - Mutational Signatures (v3.1 - June 2020)
-#https://cancer.sanger.ac.uk/cosmic/signatures/SBS/index.tt
+# https://cancer.sanger.ac.uk/cosmic/signatures/SBS/index.tt
 
 # Analysis with 4 gene signatures
 dlbc.sig = extractSignatures(mat = dlbc.tnm, n = 4, pConstant = 0.1,  parallel = 2)
@@ -183,9 +184,86 @@ dlbc.se = signatureEnrichment(maf = dlbc.mutect.maf_clin, sig_res = dlbc.sig)
 
 plotEnrichmentResults(enrich_res = dlbc.se, pVal = 0.05)
 
------------------------------------------
------------------------------------------
-     
+#-----------------------------------------
+# Workflow for Mutations on Firehose with hg19 ----
+#-----------------------------------------
+
+#Download Mutational Data
+# https://github.com/PoisonAlien/TCGAmutations/        
+dlbc.firehose <- TCGAmutations::tcga_load(study = "DLBC", source = "Firehose")
+
+#Requires BSgenome object
+library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)
+
+dlbc.firehose_clin <- read.maf(maf = dlbc.firehose@data, 
+                                   clinicalData=dlbc.firehose@clinical.data, 
+                                   verbose = T, 
+                                   isTCGA = T, 
+                                   removeDuplicatedVariants = F)
+
+#Trinucleotide Matrix
+dlbc.fh.tnm = trinucleotideMatrix(maf = dlbc.firehose_clin, prefix = 'chr', add = TRUE,
+                               ref_genome = "BSgenome.Hsapiens.UCSC.hg19")        
+
+#APOBEC Differentiation by Trinucleotide Matrix
+# ---APOBEC related mutations are enriched in  2.083 % of samples (APOBEC enrichment score > 2 ;  1  of  48  samples
+#plotApobecDiff(tnm = dlbc.fh.tnm, maf = dlbc.firehose_clin, pVal = 0.5)
+
+#Run main function with maximum 10 signatures. 
+library('NMF')
+
+dlbc.sign = estimateSignatures(mat = dlbc.fh.tnm, nTry = 10, pConstant = 0.1, plotBestFitRes = T, parallel = 2)
+
+#- Legacy - Mutational Signatures (v2 - March 2015):
+# https://cancer.sanger.ac.uk/cosmic/signatures_v2.tt
+# https://cancer.sanger.ac.uk/signatures_v2/Signature_patterns.png
+# https://cancer.sanger.ac.uk/signatures_v2/matrix.png
+
+
+#- Single Base Substitution (SBS) - Mutational Signatures (v3.1 - June 2020)
+# https://cancer.sanger.ac.uk/cosmic/signatures/SBS/index.tt
+
+# Analysis with 4 gene signatures
+dlbc.sig = extractSignatures(mat = dlbc.fh.tnm, n = 4, pConstant = 0.1,  parallel = 2)
+
+#Compate against original 30 signatures 
+dlbc.og30.cosm = compareSignatures(nmfRes = dlbc.sig, sig_db = "legacy")
+
+#library('pheatmap')
+pheatmap::pheatmap(mat = dlbc.og30.cosm$cosine_similarities, 
+                   cluster_rows = FALSE, 
+                   angle_col = "45",
+                   cellwidth = 20, cellheight = 20,
+                   width = 7, height=4,
+                   main = "Cosine similarity against validated signatures - Legacy")
+
+#Compate against updated version3 60 signatures 
+dlbc.v4.cosm = compareSignatures(nmfRes = dlbc.sig, sig_db = "SBS")
+
+#library('pheatmap')
+pheatmap::pheatmap(mat = dlbc.v4.cosm$cosine_similarities, 
+                   cluster_rows = FALSE, 
+                   angle_col = "45",
+                   cellwidth = 20, cellheight = 20,
+                   width = 7, height=4,                   
+                   main = "Cosine similarity against validated signatures - SBS")
+
+maftools::plotSignatures(nmfRes = dlbc.sig, title_size = 0.9, sig_db = "legacy")
+
+maftools::plotSignatures(nmfRes = dlbc.sig, title_size = 0.9, sig_db = "SBS")
+
+#Signatures can further be assigned to samples and enrichment analysis can be
+#performd using signatureEnrichment funtion, which identifies mutations enriched
+#in every signature identified.
+
+
+dlbc.se = signatureEnrichment(maf = dlbc.mutect.maf_clin, sig_res = dlbc.sig)
+
+#Above results can be visualzied similar to clinical enrichments.
+
+plotEnrichmentResults(enrich_res = dlbc.se, pVal = 0.05)
+
+
 # References 
      
 #1. maftools : Summarize, Analyze and Visualize MAF Files. 
