@@ -1,0 +1,166 @@
+---
+title: "Downloading DLBC datasets"
+output: 
+  github_document: 
+    df_print: paged
+    html_preview: FALSE
+    keep_html: TRUE
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_format = "all") })    
+---
+
+```{r error=TRUE, message=FALSE, warning=FALSE, include=FALSE, purl=FALSE, results='hide'}
+## This chunk automatically generates a text .R version of this script when running within knitr.
+input  = knitr::current_input()  # filename of input document
+output = paste(tools::file_path_sans_ext(input), 'R', sep = '.')
+try(knitr::purl(input,output,documentation=2,quiet=T), silent = TRUE)
+# Avoid duplicate label error of knitr::purl
+options(knitr.duplicate.label = 'allow')
+# Code to browse the markdown file with renderized images.
+knitr::opts_chunk$set(
+  fig.path = "figs/render_datasets-"
+)
+```
+
+# Installing and Loading Libraries            
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+packages_bioconductor = c("ArrayExpress", "GEOquery", "oligo", "Biobase")
+
+# Install and load packages
+package.check <- lapply(packages_bioconductor, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    BiocManager::install(x, dependencies = TRUE)
+    library(x, character.only = TRUE)
+  }
+})
+
+packages_cran = c("DT", "tidyverse", "curl", "urltools", "xml2", "fs")
+
+# Install and load packages
+package.check <- lapply(packages_cran, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+    library(x, character.only = TRUE)
+  }
+})
+
+rm(package.check, packages_bioconductor, packages_cran)
+```
+
+
+# E-GEOD-17189 - Transcription profiling by array for molecular classification of human AIDS-related lymphomas
+
+Same 17 Samples microarray as:
+
+- GSE17189 Molecular Classification of AIDS-Related Lymphomas
+
+ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17189
+
+- E-GEOD-17372 - Molecular Classification of AIDS-Related Lymphomas [including third-party data]
+
+https://www.ebi.ac.uk/arrayexpress/experiments/E-GEOD-17372/?query=DLBCL&page=1&pagesize=500
+
+- GSE17372 - Molecular Classification of AIDS-Related Lymphomas
+
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17372
+
+
+# GSE17189 - Import of annotation data and expression data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+
+file <- paste0(download_dir, "/GSE17189_series_matrix.txt.gz")
+
+# GEOquery 
+if (file.exists(file)) {
+  GSE17189 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE17189 <- getGEO("GSE17189", destdir=download_dir)[1]
+}
+
+data.GSE17189 <- pData(GSE17189[[1]])
+expr.GSE17189 <- exprs(GSE17189[[1]])
+
+rm(GSE17189)
+
+save(data.GSE17189,expr.GSE17189,  file="data/dataset.GSE17189.RData")
+```
+
+# GSE65418 - Genomic analysis of xCT-mediated regulatory network: identification of novel targets against AIDS-associated lymphoma
+
+https://www.ebi.ac.uk/arrayexpress/experiments/E-GEOD-65418/?query=DLBCL&page=1&pagesize=500
+
+Same 12 samples as:
+
+http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE65418
+
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+
+file <- paste0(download_dir, "/GSE65418_series_matrix.txt.gz")
+
+# GEOquery 
+if (file.exists(file)) {
+  GSE65418 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE65418 <- getGEO("GSE65418", destdir=download_dir)[1]
+}
+
+data.GSE65418 <- pData(GSE65418[[1]])
+expr.GSE65418 <- exprs(GSE65418[[1]])
+
+rm(GSE65418)
+
+save(data.GSE65418,expr.GSE65418, file="data/dataset.GSE65418.RData")
+
+```
+
+
+# E-GEOD-18826 - 3D culture of AIDS-NHL cells influences gene expression related to B-cell development, proliferation and survival
+
+Same 6 Samples microarray as:
+
+https://www.ebi.ac.uk/arrayexpress/experiments/E-GEOD-18826/?query=DLBCL&page=1&pagesize=500
+
+GSE18826 3D culture of AIDS-NHL cells influences gene expression related to B-cell development, proliferation and survival
+ 	
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE18826
+
+
+# GSE18826 - Import of annotation data and expression data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+
+file <- paste0(download_dir, "/GSE18826_series_matrix.txt.gz")
+
+# GEOquery 
+if (file.exists(file)) {
+  GSE18826 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE18826 <- getGEO("GSE18826", destdir=download_dir)[1]
+}
+
+data.GSE18826 <- pData(GSE18826[[1]])
+expr.GSE18826 <- exprs(GSE18826[[1]])
+
+rm(GSE18826, file)
+
+save(data.GSE18826,expr.GSE18826,  file="data/dataset.GSE18826.RData")
+```
+
+# E-GEOD-67763 - The tumor virus landscape of AIDS-related lymphomas
+
+Same 25 Samples RNA seq as:
+
+GSE67763 AIDS-related lymphoma samples were sequenced and analyzed by presnce/absence of Epstein-Barr virus EBV.
+
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE67763 
+
+Raw data not provided - IRB decided that consent form was not consistent with any disclosure of genotyping data, including through dbGaP. This an atypical and highly irregular dataset.
