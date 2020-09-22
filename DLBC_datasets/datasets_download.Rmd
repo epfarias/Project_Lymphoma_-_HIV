@@ -49,6 +49,54 @@ rm(package.check, packages_bioconductor, packages_cran)
 ```
 
 
+# GSE65418 - Genomic analysis of xCT-mediated regulatory network: identification of novel targets against AIDS-associated lymphoma
+
+https://www.ebi.ac.uk/arrayexpress/experiments/E-GEOD-65418/?query=DLBCL&page=1&pagesize=500
+
+Same 12 samples as:
+
+http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE65418
+
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+
+file <- paste0(download_dir, "/GSE65418_series_matrix.txt.gz")
+
+# GEOquery 
+if (file.exists(file)) {
+  GSE65418 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE65418 <- getGEO("GSE65418", destdir=download_dir)[1]
+}
+
+data.GSE65418 <- pData(GSE65418[[1]])
+expr.GSE65418 <- exprs(GSE65418[[1]])
+
+rm(GSE65418)
+```
+
+# GSE65418 - Mapping Probes with gene Symbols and Entrezid
+
+```{r}
+
+#  load/install the package
+if(!require("illuminaHumanv4.db")) BiocManager::install("illuminaHumanv4.db")
+
+your_probe_ids <- unique(rownames(expr.GSE65418))
+# The below function call will return a datafram with probe_id, gene symbol
+# and ŕefgene_id for your data
+
+anno.GSE65418 <- AnnotationDbi::select(illuminaHumanv3.db, 
+       keys = your_probe_ids, 
+       columns=c("SYMBOL", "ENTREZID"), 
+       keytype="PROBEID")
+
+save(data.GSE65418, expr.GSE65418, anno.GSE65418, file="../data/dataset.GSE65418.RData")
+```
+
+
 # E-GEOD-17189 - Transcription profiling by array for molecular classification of human AIDS-related lymphomas
 
 Same 17 Samples microarray as:
@@ -85,41 +133,26 @@ data.GSE17189 <- pData(GSE17189[[1]])
 expr.GSE17189 <- exprs(GSE17189[[1]])
 
 rm(GSE17189)
-
-save(data.GSE17189,expr.GSE17189,  file="data/dataset.GSE17189.RData")
 ```
 
-# GSE65418 - Genomic analysis of xCT-mediated regulatory network: identification of novel targets against AIDS-associated lymphoma
+# GSE17189 - Mapping Probes with gene Symbols and Entrezid
 
-https://www.ebi.ac.uk/arrayexpress/experiments/E-GEOD-65418/?query=DLBCL&page=1&pagesize=500
+```{r}
 
-Same 12 samples as:
+#  load/install the package
+if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
 
-http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE65418
+your_probe_ids <- unique(rownames(expr.GSE17189))
+# The below function call will return a datafram with probe_id, gene symbol
+# and ŕefgene_id for your data
 
+anno.GSE17189 <- AnnotationDbi::select(hgu133plus2.db, 
+       keys = your_probe_ids, 
+       columns=c("SYMBOL", "ENTREZID"), 
+       keytype="PROBEID")
 
-```{r message=FALSE, warning=FALSE }
-download_dir <- fs::path(".data_tmp")
-
-file <- paste0(download_dir, "/GSE65418_series_matrix.txt.gz")
-
-# GEOquery 
-if (file.exists(file)) {
-  GSE65418 <- getGEO(filename=file)
-} else {
-  dir_create(download_dir)
-  GSE65418 <- getGEO("GSE65418", destdir=download_dir)[1]
-}
-
-data.GSE65418 <- pData(GSE65418[[1]])
-expr.GSE65418 <- exprs(GSE65418[[1]])
-
-rm(GSE65418)
-
-save(data.GSE65418,expr.GSE65418, file="data/dataset.GSE65418.RData")
-
+save(data.GSE17189, expr.GSE17189, anno.GSE17189, file="../data/dataset.GSE17189.RData")
 ```
-
 
 # E-GEOD-18826 - 3D culture of AIDS-NHL cells influences gene expression related to B-cell development, proliferation and survival
 
@@ -152,7 +185,25 @@ expr.GSE18826 <- exprs(GSE18826[[1]])
 
 rm(GSE18826, file)
 
-save(data.GSE18826,expr.GSE18826,  file="data/dataset.GSE18826.RData")
+```
+
+# GSE18826 - Mapping Probes with gene Symbols and Entrezid
+
+```{r}
+
+#  load/install the package
+if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
+
+your_probe_ids <- unique(rownames(expr.GSE18826))
+# The below function call will return a datafram with probe_id, gene symbol
+# and ŕefgene_id for your data
+
+anno.GSE18826 <- AnnotationDbi::select(hgu133plus2.db, 
+       keys = your_probe_ids, 
+       columns=c("SYMBOL", "ENTREZID"), 
+       keytype="PROBEID")
+
+save(data.GSE18826,expr.GSE18826,  anno.GSE17189, file="../data/dataset.GSE18826.RData")
 ```
 
 # E-GEOD-67763 - The tumor virus landscape of AIDS-related lymphomas
