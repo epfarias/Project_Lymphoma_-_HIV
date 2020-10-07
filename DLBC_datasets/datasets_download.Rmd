@@ -82,7 +82,7 @@ rm(GSE65418)
 ```{r}
 
 #  load/install the package
-if(!require("illuminaHumanv4.db")) BiocManager::install("illuminaHumanv4.db")
+if(!require("illuminaHumanv3.db")) BiocManager::install("illuminaHumanv3.db")
 
 your_probe_ids <- unique(rownames(expr.GSE65418))
 # The below function call will return a datafram with probe_id, gene symbol
