@@ -25,8 +25,9 @@ knitr::opts_chunk$set(
 # Installing and Loading Libraries            
 
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
-packages_bioconductor = c("ArrayExpress", "GEOquery", "oligo", "Biobase")
 
+#packages_bioconductor = c("ArrayExpress", "GEOquery", "Biobase", "oligo")
+packages_bioconductor = c("GEOquery", "Biobase")
 # Install and load packages
 package.check <- lapply(packages_bioconductor, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
@@ -34,9 +35,7 @@ package.check <- lapply(packages_bioconductor, FUN = function(x) {
     library(x, character.only = TRUE)
   }
 })
-
 packages_cran = c("DT", "tidyverse", "curl", "urltools", "xml2", "fs")
-
 # Install and load packages
 package.check <- lapply(packages_cran, FUN = function(x) {
   if (!require(x, character.only = TRUE)) {
@@ -44,9 +43,255 @@ package.check <- lapply(packages_cran, FUN = function(x) {
     library(x, character.only = TRUE)
   }
 })
-
 rm(package.check, packages_bioconductor, packages_cran)
 ```
+
+
+    GEO no.     Name            Reference                 Used arrays         n   
+1   GSE56315    CHEPRETRO       Dybkær et al. (2015)      hgu133plus2         89    
+2   GSE19246    BCCA            Williams et al. (2010)    hgu133plus2         177  
+3   GSE12195    CUICG           Compagno et al. (2009)    hgu133plus2         136  
+4   GSE22895    HMRC            Jima et al. (2010)        hugene10st          101  
+5   GSE31312    IDRC            Visco et al. (2012)       hgu133plus2         469  
+6   GSE10846*   LLMPP R-CHOP    Lenz et al. (2008)        hgu133plus2         181  
+7   GSE10846*   LLMPP CHOP      Lenz et al. (2008)        hgu133plus2         233  
+8   GSE34171*   MDFCI           Monti et al. (2012)       hgu133plus2,snp6    90  
+9   GSE34171*   MDFCI           Monti et al. (2012)       hgu133a,hgu133b     78  
+10  GSE22470    MMML            Salaverria et al. (2011)  hgu133a             271  
+11  GSE4475     UBCBF           Hummel et al. (2006)      hgu133a             221  
+
+# GSE10846 - Prediction of survival in diffuse large B cell lymphoma treated with chemotherapy plus Rituximab
+
+Samples with survival data (420)
+
+Gene expression profiling of DLBCL patient samples was performed to investigate, whether molecular gene expression signatures retain their prognostic significance in patients treated with chemotherapy plus Rituximab. The lymphnode, germinal center signature and a new angiogenesis signature were combined to a final multivariate model which defined quartile groups among Rituximab-CHOP-treated patients with distinct 3-year overall survival rates.  
+Keywords: clinical history design  
+  	
+Overall design 	The retrospective study included 181 clinical samples from CHOP-treated patients and 233 clinical samples from Rituximab-CHOP-treated patients.  
+  	
+Citation(s) 	  
+
+    Lenz G, Wright G, Dave SS, Xiao W et al. Stromal gene signatures in large-B-cell lymphomas. N Engl J Med 2008 Nov 27;359(22):2313-23. PMID: 19038878  https://pubmed.ncbi.nlm.nih.gov/19038878/
+    Cardesa-Salzmann TM, Colomo L, Gutierrez G, Chan WC et al. High microvessel density determines a poor outcome in patients with diffuse large B-cell lymphoma treated with rituximab plus chemotherapy. Haematologica 2011 Jul;96(7):996-1001. PMID: 21546504  
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE10846_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE10846 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE10846 <- getGEO("GSE10846", destdir=download_dir)[1]
+  GSE10846_supp <- getGEOSuppFiles("GSE10846")
+}
+data.GSE10846 <- pData(GSE10846[[1]])
+expr.GSE10846 <- exprs(GSE10846[[1]])
+rm(GSE10846)
+
+
+```
+
+```{r}
+#  load/install the package
+if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
+your_probe_ids <- unique(rownames(expr.GSE10846))
+# The below function call will return a datafram with probe_id, gene symbol
+# and ŕefgene_id for your data
+anno.GSE10846 <- AnnotationDbi::select(hgu133plus2.db, 
+       keys = your_probe_ids, 
+       columns=c("SYMBOL", "ENTREZID"), 
+       keytype="PROBEID")
+save(data.GSE10846, expr.GSE10846, anno.GSE10846, file="../data/dataset.GSE10846.RData")
+```
+
+# GSE34171 - Integrative Analysis of a series of newly diagnosed Diffuse Large B-cell Lymphomas (DLBCLs)
+
+Samples (510)  / Samples with survival data (72) 
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE34171_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE34171 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE34171 <- getGEO("GSE34171", destdir=download_dir)[1]
+  GSE34171_supp <- getGEOSuppFiles("GSE34171")
+}
+
+data.GSE34171 <- pData(GSE34171[[1]])
+expr.GSE34171 <- exprs(GSE34171[[1]])
+
+require(RCurl)
+my_url <-"ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE34nnn/GSE34171/suppl/"
+
+my_filenames= c("GSE34171_outcome_data.txt.gz", "GSE34171_clinical_info.txt.gz")
+
+my_filenames <- strsplit(my_filenames, "\r\n")
+my_filenames = unlist(my_filenames)
+
+for(my_file in my_filenames){
+download.file(paste0(my_url, my_file), destfile =  file.path('.data_tmp', my_file))
+}
+
+data.GSE34171_surv <- read.csv(".data_tmp/GSE34171_outcome_data.txt.gz", sep = "\t",  skip = 1)
+data.GSE34171_clin <- read.csv(".data_tmp/GSE34171_clinical_info.txt.gz", sep = "\t")
+
+row.names(data.GSE34171_surv) <- data.GSE34171_surv$CaseID
+row.names(data.GSE34171_clin) <- data.GSE34171_clin$Title
+data.GSE34171_clin <- data.GSE34171_clin[data.GSE34171_surv$CaseID,]
+
+data.GSE34171_clin <-  cbind(data.GSE34171_clin, data.GSE34171_surv) 
+
+data.GSE34171 <- data.GSE34171[data.GSE34171$title %in% data.GSE34171_clin$Title, ]
+
+data.GSE34171 <- cbind(data.GSE34171, data.GSE34171_clin)
+
+expr.GSE34171 <- data.matrix(expr.GSE34171[,row.names(data.GSE34171)])
+
+rm(data.GSE34171_outcome, data.GSE34171_clinical)  
+
+rm(GSE34171)
+```
+
+```{r}
+#  load/install the package
+if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
+your_probe_ids <- unique(rownames(expr.GSE34171))
+# The below function call will return a datafram with probe_id, gene symbol
+# and ŕefgene_id for your data
+anno.GSE34171 <- AnnotationDbi::select(hgu133plus2.db, 
+       keys = your_probe_ids, 
+       columns=c("SYMBOL", "ENTREZID"), 
+       keytype="PROBEID")
+save(data.GSE34171, expr.GSE34171, anno.GSE34171, file="../data/dataset.GSE34171.RData")
+```
+
+# GSE103944 - Gene Expression Profiling reveals a close relationship between Follicular lymphoma Grade 3A and 3B, but distinct profiles of Follicular Lymphoma Grade 1 and 2
+
+Samples (84)  
+
+No overall survival data.
+
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE103944_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE103944 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE103944 <- getGEO("GSE103944", destdir=download_dir)[1]
+}
+data.GSE103944 <- pData(GSE103944[[1]])
+expr.GSE103944 <- exprs(GSE103944[[1]])
+rm(GSE103944)
+```
+
+# GSE22470 - Translocations Activating IRF4 Identify a Subtype of Germinal-Center-Derived B-cell Lymphoma Affecting Predominantly Children and Young Adults
+
+Samples (271)  
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE22470_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE22470 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE22470 <- getGEO("GSE22470", destdir=download_dir)[1]
+}
+data.GSE22470 <- pData(GSE22470[[1]])
+expr.GSE22470 <- exprs(GSE22470[[1]])
+rm(GSE22470)
+```
+
+
+# GSE31312 - Development and application of a new immunophenotypic algorithm for molecular subtype classification of Diffuse Large B-Cell Lymphoma (DLBCL): Report from an International DLBCL Rituximab-CHOP Consortium Program Study
+
+Sample (498) / No survival data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE31312_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE31312 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE31312 <- getGEO("GSE31312", destdir=download_dir)[1]
+}
+data.GSE31312 <- pData(GSE31312[[1]])
+expr.GSE31312 <- exprs(GSE31312[[1]])
+rm(GSE31312)
+```
+# GSE22895 - Deep Sequencing of the Small RNA Transcriptome of Normal and Malignant Human B cells Identifies Hundreds of Novel MicroRNAs: microarray analysis
+
+Sample (101) / No survival data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE22895_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE22895 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE22895 <- getGEO("GSE22895", destdir=download_dir)[1]
+}
+data.GSE22895 <- pData(GSE22895[[1]])
+expr.GSE22895 <- exprs(GSE22895[[1]])
+rm(GSE22895)
+```
+
+
+
+# GSE12195 - Mutations of multiple genes deregulate the NF-kB pathway in diffuse large B cell lymphoma
+
+Sample (136) / No survival data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE12195_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE12195 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE12195 <- getGEO("GSE12195", destdir=download_dir)[1]
+}
+data.GSE12195 <- pData(GSE12195[[1]])
+expr.GSE12195 <- exprs(GSE12195[[1]])
+rm(GSE12195)
+```
+# GSE19246 - Mutations of multiple genes deregulate the NF-kB pathway in diffuse large B cell lymphoma
+
+Sample (177) / No survival data
+
+```{r message=FALSE, warning=FALSE }
+download_dir <- fs::path(".data_tmp")
+file <- paste0(download_dir, "/GSE19246_series_matrix.txt.gz")
+# GEOquery 
+if (file.exists(file)) {
+  GSE19246 <- getGEO(filename=file)
+} else {
+  dir_create(download_dir)
+  GSE19246 <- getGEO("GSE19246", destdir=download_dir)[1]
+}
+data.GSE19246 <- pData(GSE19246[[1]])
+expr.GSE19246 <- exprs(GSE19246[[1]])
+rm(GSE19246)
+```
+```{r}
+rm(download_dir,file,your_probe_ids)
+```
+
+
+# ---- 
 
 
 # GSE65418 - Genomic analysis of xCT-mediated regulatory network: identification of novel targets against AIDS-associated lymphoma
@@ -60,9 +305,7 @@ http://www.ncbi.nlm.nih.gov/projects/geo/query/acc.cgi?acc=GSE65418
 
 ```{r message=FALSE, warning=FALSE }
 download_dir <- fs::path(".data_tmp")
-
 file <- paste0(download_dir, "/GSE65418_series_matrix.txt.gz")
-
 # GEOquery 
 if (file.exists(file)) {
   GSE65418 <- getGEO(filename=file)
@@ -70,29 +313,23 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE65418 <- getGEO("GSE65418", destdir=download_dir)[1]
 }
-
 data.GSE65418 <- pData(GSE65418[[1]])
 expr.GSE65418 <- exprs(GSE65418[[1]])
-
 rm(GSE65418)
 ```
 
 # GSE65418 - Mapping Probes with gene Symbols and Entrezid
 
 ```{r}
-
 #  load/install the package
 if(!require("illuminaHumanv3.db")) BiocManager::install("illuminaHumanv3.db")
-
 your_probe_ids <- unique(rownames(expr.GSE65418))
 # The below function call will return a datafram with probe_id, gene symbol
 # and ŕefgene_id for your data
-
 anno.GSE65418 <- AnnotationDbi::select(illuminaHumanv3.db, 
        keys = your_probe_ids, 
        columns=c("SYMBOL", "ENTREZID"), 
        keytype="PROBEID")
-
 save(data.GSE65418, expr.GSE65418, anno.GSE65418, file="../data/dataset.GSE65418.RData")
 ```
 
@@ -118,9 +355,7 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE17372
 
 ```{r message=FALSE, warning=FALSE }
 download_dir <- fs::path(".data_tmp")
-
 file <- paste0(download_dir, "/GSE17189_series_matrix.txt.gz")
-
 # GEOquery 
 if (file.exists(file)) {
   GSE17189 <- getGEO(filename=file)
@@ -128,29 +363,23 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE17189 <- getGEO("GSE17189", destdir=download_dir)[1]
 }
-
 data.GSE17189 <- pData(GSE17189[[1]])
 expr.GSE17189 <- exprs(GSE17189[[1]])
-
 rm(GSE17189)
 ```
 
 # GSE17189 - Mapping Probes with gene Symbols and Entrezid
 
 ```{r}
-
 #  load/install the package
 if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
-
 your_probe_ids <- unique(rownames(expr.GSE17189))
 # The below function call will return a datafram with probe_id, gene symbol
 # and ŕefgene_id for your data
-
 anno.GSE17189 <- AnnotationDbi::select(hgu133plus2.db, 
        keys = your_probe_ids, 
        columns=c("SYMBOL", "ENTREZID"), 
        keytype="PROBEID")
-
 save(data.GSE17189, expr.GSE17189, anno.GSE17189, file="../data/dataset.GSE17189.RData")
 ```
 
@@ -169,9 +398,7 @@ https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE18826
 
 ```{r message=FALSE, warning=FALSE }
 download_dir <- fs::path(".data_tmp")
-
 file <- paste0(download_dir, "/GSE18826_series_matrix.txt.gz")
-
 # GEOquery 
 if (file.exists(file)) {
   GSE18826 <- getGEO(filename=file)
@@ -179,39 +406,28 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE18826 <- getGEO("GSE18826", destdir=download_dir)[1]
 }
-
 data.GSE18826 <- pData(GSE18826[[1]])
 expr.GSE18826 <- exprs(GSE18826[[1]])
-
 rm(GSE18826, file)
-
 ```
 
 # GSE18826 - Mapping Probes with gene Symbols and Entrezid
 
 ```{r}
-
 #  load/install the package
 if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
-
 your_probe_ids <- unique(rownames(expr.GSE18826))
 # The below function call will return a datafram with probe_id, gene symbol
 # and ŕefgene_id for your data
-
 anno.GSE18826 <- AnnotationDbi::select(hgu133plus2.db, 
        keys = your_probe_ids, 
        columns=c("SYMBOL", "ENTREZID"), 
        keytype="PROBEID")
-
 save(data.GSE18826,expr.GSE18826,  anno.GSE17189, file="../data/dataset.GSE18826.RData")
 ```
 
-# E-GEOD-67763 - The tumor virus landscape of AIDS-related lymphomas
 
-Same 25 Samples RNA seq as:
+```{r}
+save.image("~/d4/DLBCL/datasets_download.RData")
+```
 
-GSE67763 AIDS-related lymphoma samples were sequenced and analyzed by presnce/absence of Epstein-Barr virus EBV.
-
-https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE67763 
-
-Raw data not provided - IRB decided that consent form was not consistent with any disclosure of genotyping data, including through dbGaP. This an atypical and highly irregular dataset.

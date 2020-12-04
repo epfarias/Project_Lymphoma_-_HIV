@@ -1,0 +1,65 @@
+---
+title: "Integrating of DLBCL survival: GSE10846 and GSE34171"
+output: html_notebook
+---
+
+Cross-platform normalization of microarray and RNA-seq data for machine learning applications  
+https://peerj.com/articles/1621/#supplemental-information  
+https://github.com/greenelab/TDM  
+
+
+```{r}
+if(!require(devtools)){ install.packages("devtools") }
+if(!require(TDM)){ devtools::install_github("greenelab/TDM") }
+ setwd("~/DLBCL")
+```
+
+# Integrating expressions: GSE10846 and GSE34171
+
+
+```{r}
+load("dataset.GSE10846.RData")
+load("dataset.GSE34171.RData")
+```
+
+
+
+```{r}
+write.table(expr.GSE10846,"expr.GSE10846.txt", sep ="\t")
+
+write.table(expr.GSE34171, "expr.GSE34171.txt", sep ="\t")
+
+expr.GSE34171.tdm <- tdm_transform(ref_file = "expr.GSE10846.txt", file = "expr.GSE34171.txt")
+
+rownames(expr.GSE34171.tdm) <-  expr.GSE34171.tdm$gene
+expr.GSE34171.tdm$gene  <- NULL
+colnames(expr.GSE34171.tdm) <- colnames(expr.GSE34171)
+
+expr.GSE34171.tdm <- matrix(as.numeric(unlist(expr.GSE34171.tdm)),  nrow = dim(expr.GSE34171.tdm)[1], ncol = dim(expr.GSE34171.tdm)[2])
+colnames(expr.GSE34171.tdm) <- colnames(expr.GSE34171)
+
+expr <- data.frame(cbind(expr.GSE10846,expr.GSE34171.tdm))
+```
+
+
+
+```{r}
+data.GSE10846 <- data.frame(code = data.GSE10846$geo_accession,
+                            gender = data.GSE10846$characteristics_ch1,
+                            age = data.GSE10846$characteristics_ch1.1,
+                            diagnosis = data.GSE10846$characteristics_ch1.6,
+                            os_status = data.GSE10846$characteristics_ch1.7,
+                            os_month = (as.numeric(substr(data.GSE10846$characteristics_ch1.8, 33,36)) * 12),
+                            chemotherapy = data.GSE10846$characteristics_ch1.9,
+                            stage = data.GSE10846$characteristics_ch1.11,
+                            ldh_ratio = data.GSE10846$characteristics_ch1.12,
+                            extranodal_sites = data.GSE10846$characteristics_ch1.13)
+
+data.GSE34171 <- data.frame(code = data.GSE34171$geo_accession,
+                            ipi = data.GSE34171$IPI,
+                            clean_complex = data.GSE34171$clean.vs..complex,
+                            os_status = data.GSE34171$Status_OS..0.censored.1.dead.,
+                            os_month = (data.GSE34171$OS..days. / 30))
+                            
+```
+
