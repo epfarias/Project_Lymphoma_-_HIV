@@ -83,10 +83,10 @@ if (file.exists(file)) {
 } else {
   dir_create(download_dir)
   GSE10846 <- getGEO("GSE10846", destdir=download_dir)[1]
-  GSE10846_supp <- getGEOSuppFiles("GSE10846")
+  #GSE10846_supp <- getGEOSuppFiles("GSE10846")
 }
-data.GSE10846 <- pData(GSE10846[[1]])
-expr.GSE10846 <- exprs(GSE10846[[1]])
+data.GSE10846 <- pData(GSE10846)
+expr.GSE10846 <- exprs(GSE10846)
 rm(GSE10846)
 
 
@@ -97,7 +97,7 @@ rm(GSE10846)
 if(!require("hgu133plus2.db")) BiocManager::install("hgu133plus2.db")
 your_probe_ids <- unique(rownames(expr.GSE10846))
 # The below function call will return a datafram with probe_id, gene symbol
-# and ŕefgene_id for your data
+# and refgene_id for your data
 anno.GSE10846 <- AnnotationDbi::select(hgu133plus2.db, 
        keys = your_probe_ids, 
        columns=c("SYMBOL", "ENTREZID"), 
@@ -121,8 +121,8 @@ if (file.exists(file)) {
   GSE34171_supp <- getGEOSuppFiles("GSE34171")
 }
 
-data.GSE34171 <- pData(GSE34171[[1]])
-expr.GSE34171 <- exprs(GSE34171[[1]])
+data.GSE34171 <- pData(GSE34171)
+expr.GSE34171 <- exprs(GSE34171)
 
 require(RCurl)
 my_url <-"ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE34nnn/GSE34171/suppl/"
@@ -186,8 +186,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE103944 <- getGEO("GSE103944", destdir=download_dir)[1]
 }
-data.GSE103944 <- pData(GSE103944[[1]])
-expr.GSE103944 <- exprs(GSE103944[[1]])
+data.GSE103944 <- pData(GSE103944)
+expr.GSE103944 <- exprs(GSE103944)
 rm(GSE103944)
 ```
 
@@ -205,8 +205,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE22470 <- getGEO("GSE22470", destdir=download_dir)[1]
 }
-data.GSE22470 <- pData(GSE22470[[1]])
-expr.GSE22470 <- exprs(GSE22470[[1]])
+data.GSE22470 <- pData(GSE22470)
+expr.GSE22470 <- exprs(GSE22470)
 rm(GSE22470)
 ```
 
@@ -225,8 +225,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE31312 <- getGEO("GSE31312", destdir=download_dir)[1]
 }
-data.GSE31312 <- pData(GSE31312[[1]])
-expr.GSE31312 <- exprs(GSE31312[[1]])
+data.GSE31312 <- pData(GSE31312)
+expr.GSE31312 <- exprs(GSE31312)
 rm(GSE31312)
 ```
 # GSE22895 - Deep Sequencing of the Small RNA Transcriptome of Normal and Malignant Human B cells Identifies Hundreds of Novel MicroRNAs: microarray analysis
@@ -243,8 +243,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE22895 <- getGEO("GSE22895", destdir=download_dir)[1]
 }
-data.GSE22895 <- pData(GSE22895[[1]])
-expr.GSE22895 <- exprs(GSE22895[[1]])
+data.GSE22895 <- pData(GSE22895)
+expr.GSE22895 <- exprs(GSE22895)
 rm(GSE22895)
 ```
 
@@ -264,8 +264,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE12195 <- getGEO("GSE12195", destdir=download_dir)[1]
 }
-data.GSE12195 <- pData(GSE12195[[1]])
-expr.GSE12195 <- exprs(GSE12195[[1]])
+data.GSE12195 <- pData(GSE12195)
+expr.GSE12195 <- exprs(GSE12195)
 rm(GSE12195)
 ```
 # GSE19246 - Mutations of multiple genes deregulate the NF-kB pathway in diffuse large B cell lymphoma
@@ -282,8 +282,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE19246 <- getGEO("GSE19246", destdir=download_dir)[1]
 }
-data.GSE19246 <- pData(GSE19246[[1]])
-expr.GSE19246 <- exprs(GSE19246[[1]])
+data.GSE19246 <- pData(GSE19246)
+expr.GSE19246 <- exprs(GSE19246)
 rm(GSE19246)
 ```
 ```{r}
@@ -313,8 +313,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE65418 <- getGEO("GSE65418", destdir=download_dir)[1]
 }
-data.GSE65418 <- pData(GSE65418[[1]])
-expr.GSE65418 <- exprs(GSE65418[[1]])
+data.GSE65418 <- pData(GSE65418)
+expr.GSE65418 <- exprs(GSE65418)
 rm(GSE65418)
 ```
 
@@ -363,8 +363,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE17189 <- getGEO("GSE17189", destdir=download_dir)[1]
 }
-data.GSE17189 <- pData(GSE17189[[1]])
-expr.GSE17189 <- exprs(GSE17189[[1]])
+data.GSE17189 <- pData(GSE17189)
+expr.GSE17189 <- exprs(GSE17189)
 rm(GSE17189)
 ```
 
@@ -406,8 +406,8 @@ if (file.exists(file)) {
   dir_create(download_dir)
   GSE18826 <- getGEO("GSE18826", destdir=download_dir)[1]
 }
-data.GSE18826 <- pData(GSE18826[[1]])
-expr.GSE18826 <- exprs(GSE18826[[1]])
+data.GSE18826 <- pData(GSE18826)
+expr.GSE18826 <- exprs(GSE18826)
 rm(GSE18826, file)
 ```
 
