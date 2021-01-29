@@ -13,9 +13,9 @@ knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_format = "all") }) 
 ---
 
-Full pipeline of DEA with Glimma - Comparing gene expression by metastasis (ajcc) of DLBCL - Diffuse Large B-Cell Lymphoma
+Full pipeline of DEA with Glimma - Comparing gene expression by Neoplasm Cancer Status (ajcc) of DLBCL - Diffuse Large B-Cell Lymphoma
 
-https://www.cbioportal.org/study/summary?id=kirc_tcga_pub
+https://www.cbioportal.org/study/summary?id=dlbc_tcga_pan_can_atlas_2018
 
 
 ```{r, error=TRUE, message=FALSE, warning=FALSE, purl=FALSE, results='hide'}
