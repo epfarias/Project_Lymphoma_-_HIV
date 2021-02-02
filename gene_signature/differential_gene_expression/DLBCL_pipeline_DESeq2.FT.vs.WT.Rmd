@@ -68,12 +68,36 @@ rm(packages_cran, packages_bioconductor, package.check)
 
 ```{r}
 
+data_clinical <- read.delim("data/data_clinical.txt", comment.char="#", na.strings=c("NA", ""))
+
+dlbc_exp <- read.delim("data/dlbc_exp.txt", comment.char="#", na.strings=c("NA", ""))
+
+dlbc_exp <- dlbc_exp[!is.na(dlbc_exp$Hugo_Symbol),]
+dlbc_exp <- dlbc_exp[!duplicated(dlbc_exp$Hugo_Symbol),]
+rownames(dlbc_exp) <- as.character(dlbc_exp$Hugo_Symbol)
+dlbc_exp$Entrez_Gene_Id <- NULL
+dlbc_exp$Hugo_Symbol <- NULL
+
+```
+
+
+```{r}
+
 data_ajcc <- data_clinical %>% 
               filter(PERSON_NEOPLASM_CANCER_STATUS %in% c("Tumor Free", "With Tumor")) %>% 
               droplevels()
 
-exp_ajcc <- exp[,data_ajcc$codes]
+
+data_ajcc$codes <- gsub("-", "\\.", data_ajcc$PATIENT_ID)
+
+colnames(dlbc_exp) <- substr(colnames(dlbc_exp),1,12)
+
+data_ajcc$PERSON_NEOPLASM_CANCER_STATUS <- ifelse(data_ajcc$PERSON_NEOPLASM_CANCER_STATUS =="With Tumor", "TP","NT")
   
+exp_ajcc <- dlbc_exp[,data_ajcc$codes]
+
+
+exp_ajcc <- round(exp_ajcc, digits = 0)
 ```
 
 
