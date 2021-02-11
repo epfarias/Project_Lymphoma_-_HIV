@@ -37,7 +37,7 @@ knitr::opts_chunk$set(
 
 
 ```{r message=FALSE, warning=FALSE, paged.print=FALSE}
-packages_bioconductor = c("TCGAbiolinks", "SummarizedExperiment", "DESeq2", "Glimma", "limma","biomaRt", "genefilter")
+packages_bioconductor = c("DESeq2", "Glimma", "limma","biomaRt", "genefilter", "org.Hs.eg.db")
 
 #use this function to check if each package is on the local machine
 #if a package is installed, it will be loaded
@@ -68,9 +68,9 @@ rm(packages_cran, packages_bioconductor, package.check)
 
 ```{r}
 
-data_clinical <- read.delim("data/data_clinical.txt", comment.char="#", na.strings=c("NA", ""))
+data_clinical <- read.delim("../../data/data_clinical.txt", comment.char="#", na.strings=c("NA", ""))
 
-dlbc_exp <- read.delim("data/dlbc_exp.txt", comment.char="#", na.strings=c("NA", ""))
+dlbc_exp <- read.delim("../../data/dlbc_exp.txt", comment.char="#", na.strings=c("NA", ""))
 
 dlbc_exp <- dlbc_exp[!is.na(dlbc_exp$Hugo_Symbol),]
 dlbc_exp <- dlbc_exp[!duplicated(dlbc_exp$Hugo_Symbol),]
@@ -84,7 +84,7 @@ dlbc_exp$Hugo_Symbol <- NULL
 ```{r}
 
 data_ajcc <- data_clinical %>% 
-              filter(PERSON_NEOPLASM_CANCER_STATUS %in% c("Tumor Free", "With Tumor")) %>% 
+              dplyr::filter(PERSON_NEOPLASM_CANCER_STATUS %in% c("Tumor Free", "With Tumor")) %>% 
               droplevels()
 
 
@@ -98,6 +98,18 @@ exp_ajcc <- dlbc_exp[,data_ajcc$codes]
 
 
 exp_ajcc <- round(exp_ajcc, digits = 0)
+```
+
+```{r}
+library(org.Hs.eg.db)
+
+genenames <- row.names(dlbc_exp)
+
+cols <- c("SYMBOL", "ENSEMBL", "GENENAME")
+
+dlbc_anno <- AnnotationDbi::select(org.Hs.eg.db, keys=genenames, columns=cols, keytype="SYMBOL")
+
+colnames(dlbc_anno) <- c("symbol", "ensembl", "description")
 ```
 
 
@@ -132,7 +144,7 @@ summary(res.shr)
 ```{r}
 shrink.deseq <- as.data.frame(res.shr) %>%
     rownames_to_column("symbol") %>% 
-    left_join(annotation, by="symbol") %>% 
+    left_join(dlbc_anno, by="symbol") %>% 
     rename(logFC=log2FoldChange, FDR=padj)
 ```
 
