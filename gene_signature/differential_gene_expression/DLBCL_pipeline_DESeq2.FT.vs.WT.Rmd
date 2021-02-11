@@ -65,6 +65,24 @@ package.check <- lapply(packages_cran, FUN = function(x) {
 rm(packages_cran, packages_bioconductor, package.check)
 ```
 
+
+## Donwloading Dataframes
+
+```{r}
+# https://github.com/cBioPortal/datahub/tree/master/public/
+
+url <- "https://media.githubusercontent.com/media/cBioPortal/datahub/master/public/dlbc_tcga_pan_can_atlas_2018/data_RNA_Seq_v2_expression_median.txt"
+destfile <- "data/dlbc_exp.txt"
+download.file(url, destfile)
+
+
+url <- "https://media.githubusercontent.com/media/cBioPortal/datahub/master/public/dlbc_tcga_pan_can_atlas_2018/data_clinical_patient.txt"
+destfile <- "data/data_clinical.txt"
+download.file(url, destfile)
+
+
+```
+
 ##Loading data's
 
 ```{r}
@@ -79,6 +97,19 @@ rownames(dlbc_exp) <- as.character(dlbc_exp$Hugo_Symbol)
 dlbc_exp$Entrez_Gene_Id <- NULL
 dlbc_exp$Hugo_Symbol <- NULL
 
+```
+
+
+```{r}
+library(org.Hs.eg.db)
+
+genenames <- row.names(dlbc_exp)
+
+cols <- c("SYMBOL", "ENSEMBL", "GENENAME")
+
+dlbc_anno <- AnnotationDbi::select(org.Hs.eg.db, keys=genenames, columns=cols, keytype="SYMBOL")
+
+colnames(dlbc_anno) <- c("symbol", "ensembl", "description")
 ```
 
 
@@ -101,17 +132,6 @@ exp_ajcc <- dlbc_exp[,data_ajcc$codes]
 exp_ajcc <- round(exp_ajcc, digits = 0)
 ```
 
-```{r}
-library(org.Hs.eg.db)
-
-genenames <- row.names(dlbc_exp)
-
-cols <- c("SYMBOL", "ENSEMBL", "GENENAME")
-
-dlbc_anno <- AnnotationDbi::select(org.Hs.eg.db, keys=genenames, columns=cols, keytype="SYMBOL")
-
-colnames(dlbc_anno) <- c("symbol", "ensembl", "description")
-```
 
 
 # Running DESeq2 Differential Expression
