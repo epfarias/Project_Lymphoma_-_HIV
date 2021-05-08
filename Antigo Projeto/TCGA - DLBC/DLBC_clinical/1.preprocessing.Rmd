@@ -1,0 +1,265 @@
+---
+title: "ClinicalAnalisys_DLBCL"
+author: "Epitácio Farias, Beatriz Stransky, Patrick Terrematte"
+date: "14/08/2020"
+output: 
+  html_document: 
+    default
+  github_document: 
+    df_print: paged
+    html_preview: FALSE
+    keep_html: TRUE
+  pdf_document:
+    latex_engine: xelatex
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_format = "all") })
+---
+
+```{r, error=TRUE, message=FALSE, warning=FALSE, purl=FALSE, results='hide'}
+## This chunk automatically generates a text .R version of this script when running within knitr.
+input  = knitr::current_input()  # filename of input document
+output = paste(tools::file_path_sans_ext(input), 'R', sep = '.')
+knitr::purl(input,output,documentation=2,quiet=T)
+# Avoid duplicate label error of knitr::purl
+options(knitr.duplicate.label = 'allow')
+# Code to browse the markdown file with renderized images.
+knitr::opts_chunk$set(
+  fig.path = "figs/render-"
+)
+```
+
+
+```{r message=FALSE, warning=FALSE, echo = FALSE}
+# Set the packages of interest
+packages = c("tidyverse","skimr","finalfit","ggcharts")
+
+# if a package is installed, it will be loaded
+# otherwise, the missing package(s) will be installed and loaded
+package.check <- lapply(packages, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+    library(x, character.only = TRUE)
+  }
+})
+
+suppressMessages(library("tidyverse"))
+rm(packages)
+setwd(".")
+```
+
+## 1. Data importing and visualizing
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE}
+dlbcl_clin_raw <- read_delim("clinical.tsv", "\t", 
+                            escape_double = FALSE, 
+                            trim_ws = TRUE, na = c("\'--","NA"))
+```
+
+```{r echo=FALSE, message=FALSE, results='hide', paged.print=TRUE}
+class(dlbcl_clin_raw) 
+dim(dlbcl_clin_raw) 
+names(dlbcl_clin_raw) 
+glimpse(dlbcl_clin_raw)
+skim(dlbcl_clin_raw) 
+#View(dlbcl_clin_raw)
+```
+
+## 2. Cleaning data
+
+Select variables based on NA count (> 50% complete is a good choice!).
+<!-- # TO DO @PATRICK: simplify code NA_sum? -->
+<!-- # kirc_clean <- kirc_clin_raw %>% -->
+<!-- #     summarise_all(~ sum(is.na(.)))  -->
+
+```{r}
+NA_fifty <- dim(dlbcl_clin_raw)[1]/2
+
+NA_sum <- colSums(is.na(dlbcl_clin_raw))
+NA_sum <- as.data.frame(NA_sum)
+NA_sum <- tibble::rownames_to_column(NA_sum, "variables")
+NA_sum <- NA_sum %>%
+     filter(NA_sum < NA_fifty)
+
+dlbcl_clean <- dlbcl_clin_raw %>%
+     select(one_of(NA_sum$variables))
+```
+
+Remove duplicate observations:
+
+```{r}
+dlbcl_clean0 <- dlbcl_clean %>%
+     distinct_at('case_submitter_id', .keep_all = TRUE)
+```
+
+Remove nuneric variables with unique observations:  
+
+```{r message=FALSE, warning=FALSE, paged.print=TRUE}
+dlbcl_clean0 %>%
+     select_if(is.numeric) %>%
+     skim()
+
+dlbcl_clean1 <-  dlbcl_clean0  %>%
+     select(!c('days_to_diagnosis'))
+```
+
+Remove character variables with unique observations:
+
+```{r  message=FALSE, warning=FALSE, paged.print=TRUE}
+dlbcl_clean1 %>%
+  select_if(is.character) %>%
+  skim()
+
+dlbcl_clean2 <- dlbcl_clean1  %>%
+    select(!c('project_id', 'classification_of_tumor', 'morphology', 'progression_or_recurrence',
+              'synchronous_malignancy', 'tumor_grade', 'tumor_stage','last_known_disease_status'))
+```
+
+Remove character variables with similar information - check each one!
+
+```{r}
+table(dlbcl_clean2$`site_of_resection_or_biopsy`, exclude = NULL)
+table(dlbcl_clean2$`tissue_or_organ_of_origin`, exclude = NULL)
+
+dlbcl_clean3 <- dlbcl_clean2  %>%
+     select(!c('site_of_resection_or_biopsy'))
+```
+
+Remove other variables not directly related to patient - check each one!
+
+```{r}
+dlbcl_clean4 <- dlbcl_clean3  %>%
+     select(!c('days_to_birth','age_at_diagnosis','icd_10_code','case_id'))
+```
+
+## 3. Changing variables names
+
+Using snake_style 
+
+```{r}
+dlbcl_clean4 <- dlbcl_clean4 %>%
+     rename(patient_id = 'case_submitter_id',
+            age = 'age_at_index',
+            aa_b_symp = 'ann_arbor_b_symptoms',
+            aa_clin_stg = 'ann_arbor_clinical_stage',
+            aa_ex_inv = 'ann_arbor_extranodal_involvement')
+```
+
+## 4. Taming data
+
+Use lubridate for dates
+
+```{r}
+dlbcl_clean4 <- dlbcl_clean4 %>%
+     mutate_if(is.character, as.factor) %>%
+     mutate(patient_id = as.character(patient_id),
+            age = as.integer(age),
+            year_of_diagnosis = as.integer(year_of_diagnosis),
+            year_of_birth = as.integer(year_of_birth),
+            days_to_last_follow_up = as.integer(days_to_last_follow_up))
+```
+
+## 5. Checking NA patterns 
+
+Check distincts types of NAs: MCAR, MAR, MNAR
+
+```{r}
+dlbcl_clean4  %>%
+     missing_plot()
+
+missing_glimpse(dlbcl_clean4)
+```
+
+## 6. Checking numeric variables
+
+Check data distribution, plausible ranges, outliers;
+Thinking about deleting outliers from dataset? Need to evaluate carefully each one!
+
+```{r}
+dlbcl_clean4 %>%
+     select_if(is.numeric) %>%
+     summary()
+```
+
+```{r}
+ggplot(dlbcl_clean4, aes(age)) +
+     geom_histogram(bins = 20, alpha = 0.8, color = "red")
+```
+
+```{r}
+ggplot(dlbcl_clean4, aes(year_of_diagnosis)) +
+     geom_histogram(bins = 20, alpha = 0.8, color = "red")
+```
+
+```{r}
+ggplot(dlbcl_clean4, aes(days_to_last_follow_up)) +
+     geom_histogram(bins = 20, alpha = 0.8, color = "red")
+```
+
+```{r}
+ggplot(dlbcl_clean4, aes(year_of_birth)) +
+     geom_histogram(bins = 20, alpha = 0.8, color = "red")
+```
+
+```{r}
+ggplot(dlbcl_clean4, aes(x ='', y=age)) +
+     geom_boxplot(width = .5) +
+     geom_jitter(width = 0.05, alpha = 0.2, color = "orange")
+boxplot.stats(dlbcl_clean4$age)
+```
+
+```{r}
+ggplot(dlbcl_clean4) +
+     geom_bar(aes(x = vital_status), color = "black", fill = "orange")
+```
+
+```{r}
+ggplot(dlbcl_clean4) +
+     geom_bar(aes(x = ethnicity), color = "blue", fill = "purple" )
+```
+
+```{r}
+dlbcl_clean4 %>%
+  filter(race %in% c('asian', 'white', 'black or african american')) %>%
+  bar_chart(x = vital_status, facet = race,)
+
+```
+
+## 7. Checking categorical variables
+
+Check frequency, lables and levels 
+
+```{r}
+dlbcl_clean4 %>%
+     select_if(is.factor) %>%
+     summary() 
+
+# changing level names
+dlbcl_clin <- dlbcl_clean4 %>%
+     mutate(aa_clin_stg= fct_recode(aa_clin_stg, 'STG1'='Stage I', 'STG2'='Stage II', 'STG3'='Stage III',
+                                    'STG4'='Stage IV'),
+            treatment_type= fct_recode(treatment_type, 'Pharmaceutical' = 'Pharmaceutical Therapy, NOS', 
+            'Radiation'='Radiation Therapy, NOS' ))
+
+dlbcl_clin %>%
+     select_if(is.factor) %>%
+     summary()
+```
+
+## 8. Saving dataset
+
+```{r}
+write_csv(dlbcl_clin, path = "DBLC_clinical/dlbcl_clin.csv")
+
+rm(dlbcl_clean4, dlbcl_clean3, dlbcl_clean2, dlbcl_clean1, dlbcl_clean0, dlbcl_clean, NA_sum, NA_fifty)
+```
+
+## Further analysis
+
+- [Comparison and Hyphotesis test](2.correlation.md) 
+- [Logistic Regression Model](3.logistic_regression.md)
+
+```{r}
+sessionInfo()
+```
+
+
