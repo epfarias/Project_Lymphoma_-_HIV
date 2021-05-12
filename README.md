@@ -1,3 +1,3 @@
-# Lymphoma_Virus
+# Acute Myeloid Leukemia
 
-Research project on relations between Lymphoma and HIV infection.
+Research project on gene signature of Acute Myeloid Leukemia.
